@@ -1,142 +1,131 @@
-//http://arduino.esp8266.com/stable/package_esp8266com_index.json
-//https://dl.espressif.com/dl/package_esp32_index.json
-// ArduinoJSON can be downloaded through sketch
 
-//////////////////// LIBRARIES /////////////////////
 #include <Arduino.h>
-#include <Wire.h>
 
 #include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
+#include <WiFiClientSecureBearSSL.h>
 
-//////////////////// GLOBAL DEFINE /////////////////////
-WiFiClient client;
+// Fingerprint for demo URL, expires on June 2, 2021, needs to be updated well before this date
+const uint8_t fingerprint[20] = {0x40, 0xaf, 0x00, 0x6b, 0xec, 0x90, 0x22, 0x41, 0x8e, 0xa3, 0xad, 0xfa, 0x1a, 0xe8, 0x25, 0x41, 0x1d, 0x1a, 0x54, 0xb3};
+
+ESP8266WiFiMulti WiFiMulti;
 
 const char *ssid = "Bodo amat";
 const char *password = "H2nomor11";
-char path[] = "/";
-char host[]= "https://esp-telebot.herokuapp.com"; //WLAN IP (SERVER)
-int port = 80;
 
+void setup() {
 
+  Serial.begin(115200);
+  // Serial.setDebugOutput(true);
 
+  Serial.println();
+  Serial.println();
+  Serial.println();
 
-////////////////// LOOP AND SETUP ///////////////////////
-void setup(){
-    #if defined(ESP8266)
-        Serial.begin(115200);
-    #else
-        Serial.begin(38400);
-    #endif
+  for (uint8_t t = 4; t > 0; t--) {
+    Serial.printf("[SETUP] WAIT %d...\n", t);
+    Serial.flush();
+    delay(1000);
+  }
 
-    Serial.setDebugOutput(true);
-    for (uint8_t t = 4; t > 0; t--)
-    {
-        Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
-        Serial.flush();
-        delay(500);
-    }    
-    wifi_connection();
+  wifi_connection();  
 }
-
-
-
-
-
-void loop()
-{
-  get_json();
-  
-  delay(10000);
-}
-
-
-
 
 //////////////// BINDING CONNECTION /////////////////////
 void wifi_connection()
 {
-    Serial.print("\n");
-    Serial.printf("WiFi Connecting to :: ");
-    Serial.printf(ssid);
+  Serial.print("\n");
+  Serial.printf("WiFi Connecting to :: ");
+  Serial.printf(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFiMulti.addAP(ssid, password);
 
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.printf(".");
-    }
-
-    Serial.print("\n");
-    Serial.printf("WiFi connected");
-    Serial.printf("IP address: ");
-    Serial.print(WiFi.localIP());
-
+  if ((WiFiMulti.run() == WL_CONNECTED)) {
+    Serial.printf("[WIFI] Connected...\n");
     app_connection();
-}
-
-
-
-
-
-void app_connection()
-{
-    Serial.print("\n");
-    Serial.printf("App Connecting to :: ");
-    Serial.printf(host);
-
-    if (client.connect(host, port))
-    {
-        Serial.printf("\n\nApp Server Connected\n\n");
-    }
-    else
-    {
-        Serial.printf("\nApp Server Connection failed\n & Trying...");
-        app_connection();
-    }
-
-    Serial.print("");
-}
-
-
-
-
-///////////////////////////////////////////////////////////////
-
-void get_json(){
-  Serial.println("getting data from... ");
-  HTTPClient http;  //Declare an object of class HTTPClient
-     
-  http.begin("https://esp-telebot.herokuapp.com/api/sensor/123/65/78");  //Specify request destination
-  int httpCode = http.GET(); //Send the request
-     
-  if (httpCode > 0) { //Check the returning code
-    String payload = http.getString();   //Get the request response payload
-    Serial.println(payload);//JSON DATA
-
-    StaticJsonDocument<200> doc;
-    DeserializationError error = deserializeJson(doc, payload);
-
-    // Test if parsing succeeds.
-    if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.c_str());
-      return;
-    }
-    const char* messgae = doc["messgae"];
-    
-    int sensor_1 = doc["sensor_1"];
-    int sensor_2 = doc["sensor_2"];
-    int sensor_3 = doc["sensor_3"];
-    
-    Serial.println(sensor_1);
-    Serial.println(sensor_2);
-    Serial.println(sensor_3);
-
   }else{
-    Serial.println("CANT GET DATA");
+    Serial.printf("[WIFI] Unable to Connect...\n");
   }
+}
+
+void app_connection(){
+  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+  client->setInsecure();
+  HTTPClient https;  
   
-  http.end();
+  Serial.print("[HTTPS] begin...\n");
+  
+  int sensor1 = random(50, 80);
+  int sensor2 = random(200, 300);
+  int sensor3 = random(30, 50);
+  String(url) = "https://esp-telebot.herokuapp.com/api/sensor/"+String(sensor1)+"/"+String(sensor2)+"/"+String(sensor3);
+
+  if (https.begin(*client, url)) {  // HTTPS
+      Serial.print("[HTTPS] Getting Data -> "+url+"\n");
+      
+      // start connection and send HTTP header
+      int httpCode = https.GET();
+
+      // httpCode will be negative on error
+      if (httpCode > 0) {
+        // HTTP header has been send and Server response header has been handled
+        Serial.printf("[HTTPS] GET... code: %d\n", httpCode);
+
+        // file found at server
+        if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+          String payload = https.getString();
+
+          Serial.println("[HTTPS] RESPONSE ... ");
+          Serial.println(payload);
+
+          StaticJsonDocument<300> doc;
+          DeserializationError error = deserializeJson(doc, payload);
+
+          // Test if parsing succeeds.
+          if (error) {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+            return;
+          }
+          
+          const char *message = doc["message"];
+          int status_ = doc["status"];
+          int sensor_1 = doc["data"]["sensor_1"];
+          int sensor_2 = doc["data"]["sensor_2"];
+          int sensor_3 = doc["data"]["sensor_3"];
+
+          get_parsed_data(sensor_1, sensor_2, sensor_3);       
+          
+        }
+      } else {
+        Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+      }
+
+      https.end();
+    } else {
+      Serial.printf("[HTTPS] Unable to connect\n");
+    }
+}
+
+
+void get_parsed_data(int sensor_1, int sensor_2, int sensor_3){          
+   Serial.print("sensor_1:: ");
+   Serial.println(sensor_1);
+   Serial.print("sensor_2:: ");
+   Serial.println(sensor_2);
+   Serial.print("sensor_3:: ");
+   Serial.println(sensor_3);
+}
+
+void loop() {
+  if ((WiFiMulti.run() == WL_CONNECTED)) {
+    app_connection();
+  }else{
+    Serial.printf("[WIFI] Unable to Connect...\n");
+  }
+  Serial.println("Wait 10s before next round...");
+  delay(10000);
 }
