@@ -20,8 +20,8 @@ const uint8_t fingerprint[20] = {0x40, 0xaf, 0x00, 0x6b, 0xec, 0x90, 0x22, 0x41,
 
 ESP8266WiFiMulti WiFiMulti;
 
-const char *ssid = "Bodo amat";
-const char *password = "H2nomor11";
+const char *ssid = "your_ssid";
+const char *password = "your_ssid_password";
 
 void setup() {
 
