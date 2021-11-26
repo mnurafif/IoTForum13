@@ -13,11 +13,11 @@
 //////////////////// GLOBAL DEFINE /////////////////////
 WiFiClient client;
 
-const char *ssid = "ZenZen";
-const char *password = "12345678";
+const char *ssid = "Bodo amat";
+const char *password = "H2nomor11";
 char path[] = "/";
-char host[]= "172.20.10.3"; //WLAN IP (SERVER)
-int port = 3000;
+char host[]= "https://esp-telebot.herokuapp.com"; //WLAN IP (SERVER)
+int port = 80;
 
 
 
@@ -104,21 +104,12 @@ void app_connection()
 
 ///////////////////////////////////////////////////////////////
 
-
-
-
-
-
-const char* source_key = "N0";
-const char* destination_key = "N0";
-int value = 4; //khusus N10
-
 void get_json(){
   Serial.println("getting data from... ");
   HTTPClient http;  //Declare an object of class HTTPClient
      
-  http.begin("http://172.20.10.3:3000/api/sensor_transactions");  //Specify request destination
-  int httpCode = http.GET();                                                                  //Send the request
+  http.begin("https://esp-telebot.herokuapp.com/api/sensor/123/65/78");  //Specify request destination
+  int httpCode = http.GET(); //Send the request
      
   if (httpCode > 0) { //Check the returning code
     String payload = http.getString();   //Get the request response payload
@@ -133,52 +124,19 @@ void get_json(){
       Serial.println(error.c_str());
       return;
     }
-    const char* dest_key = doc["destination_key"];
+    const char* messgae = doc["messgae"];
     
-    int value = doc["value"];//selain N10
+    int sensor_1 = doc["sensor_1"];
+    int sensor_2 = doc["sensor_2"];
+    int sensor_3 = doc["sensor_3"];
+    
+    Serial.println(sensor_1);
+    Serial.println(sensor_2);
+    Serial.println(sensor_3);
 
-    //DOING SOMETHING HERE
-    if(String(dest_key) == String(source_key)){
-        post_json(value);
-        Serial.println("UPDATING DATA...");
-        
-        //khusus N8
-        if(String(dest_key) == "N8"){//end point
-            ///function LED
-            Serial.println("END POINT REACHED");
-        }
-    }
   }else{
     Serial.println("CANT GET DATA");
   }
   
   http.end();
 }
-
-
-
-
-
-
-
-void post_json(int val){
-    StaticJsonDocument<800> doc;   //Declaring static JSON buffer  
-    doc["source_key"] = source_key;
-    doc["value"] = val;
-    doc["destination_key"] = destination_key;
-
-    char data_json[800];
-    serializeJson(doc, data_json);
-
-    HTTPClient http;    //Declare object of class HTTPClient
-   
-    http.begin("http://172.20.10.3:3000/api/sensor_transaction");      //Specify request destination
-    http.addHeader("Content-Type", "application/json");
-    
-    int httpCode = http.POST(data_json);   //Send the request
-    String payload = http.getString();                  //Get the response payload
-//    Serial.println(payload);
-   
-    http.end();  //Close connection
-}
-
