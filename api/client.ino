@@ -1,9 +1,8 @@
 /**
-   SETRUP
-   BOARD -> https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/
-   DRIVER -> https://electronics-project-hub.com/arduino-not-detected-and-driver-issues-solved/
-          -> https://learn.sparkfun.com/tutorials/usb-serial-driver-quick-install-/all
-   ARDUINOJSON -> https://arduinojson.org/
+   SETUP BOARD   -> https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/
+   SETUP DRIVER  -> https://electronics-project-hub.com/arduino-not-detected-and-driver-issues-solved/
+                 -> https://learn.sparkfun.com/tutorials/usb-serial-driver-quick-install-/all
+   ARDUINOJSON   -> https://arduinojson.org/
 */
 
 #include <Arduino.h>
