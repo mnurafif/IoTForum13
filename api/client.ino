@@ -118,7 +118,8 @@ void app_connection(){
 }
 
 
-void get_parsed_data(int sensor_1, int sensor_2, int sensor_3){          
+void get_parsed_data(int sensor_1, int sensor_2, int sensor_3){  
+   Serial.println("[HTTPS] PARSING....");        
    Serial.print("sensor_1:: ");
    Serial.println(sensor_1);
    Serial.print("sensor_2:: ");
