@@ -52,11 +52,11 @@ router.get('/sensor/:sensor1/:sensor2/:sensor3', (req, res, next) => {
      );
       res.json({
         "status": 202,
-        "messgae": "Success",
+        "message": "Success",
         "data": {
-          "sensor_1": req.params.sensor1 + req.params.sensor2,
-          "sensor_2": req.params.sensor2 + req.params.sensor3,
-          "sensor_3": req.params.sensor3 + req.params.sensor1
+          "sensor_1": req.params.sensor1 + (0.1) * req.params.sensor2,
+          "sensor_2": req.params.sensor2 + (0.1) * req.params.sensor3,
+          "sensor_3": req.params.sensor3 + (0.1) * req.params.sensor1
         }
       });
   } catch (err) {
