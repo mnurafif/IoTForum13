@@ -5,6 +5,7 @@
    ARDUINOJSON   -> https://arduinojson.org/
 */
 
+
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
@@ -61,7 +62,8 @@ void app_connection(){
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
   client->setInsecure();
   HTTPClient https;  
-  
+
+  Serial.println("-----------------------------");
   Serial.print("[HTTPS] begin...\n");
   
   int sensor1 = random(50, 80);
@@ -135,5 +137,7 @@ void loop() {
     Serial.printf("[WIFI] Unable to Connect...\n");
   }
   Serial.println("Wait 10s before next round...");
+  Serial.println("-----------------------------");
+  Serial.println("");
   delay(10000);
 }
