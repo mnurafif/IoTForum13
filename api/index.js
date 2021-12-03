@@ -19,6 +19,16 @@ bot.onText(/\/start/, (msg) => {
     );
 });
 
+bot.onText(/\/show_url/, (msg) => {
+    global_msg_id = msg.chat.id;
+    bot.sendMessage(
+        global_msg_id,
+        `
+            https://esp-telegrambot.herokuapp.com/api/sensor/ \n
+            https://esp-telebot.herokuapp.com/api/test/cobacoba
+        `
+    );
+});
 
 bot.on('message', (msg) => {
   console.log(msg);
